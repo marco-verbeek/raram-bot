@@ -1,0 +1,10 @@
+{
+  "!raram": "displays an analysis of your last game.",
+  "!raram help": "displays all commands and their description",
+  "!raram profile": "displays your rARAM profile.",
+  "!raram verify <name> <region>": "verifies that you are <name>",
+  "!raram start <amount>": "starts a ranked queue of <amount> of games.",
+  "!raram stop": "stops the ranked queue.",
+  "!raram add <amount>": "adds <amount> of games to the ranked queue.",
+  "!raram remove <amount>\n": "removes <amount> of games from the ranked queue."
+}
