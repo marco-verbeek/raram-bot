@@ -22,6 +22,7 @@ async function command_analyse(msg, gameId) {
     const players = res["data"]["players"]
     let col1 = "", col2 = "", col3 = ""
 
+    // TODO: this needs to be cleaned up and finished.
     for (var i = 0; i < 5; i++) {
       col1 += champ_icon_or_random(players[i]["champion"]) + " | " +
         players[i]["summonerName"] + "\n";

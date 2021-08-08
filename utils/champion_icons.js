@@ -13,5 +13,6 @@ exports.random_rank_icon = () => {
 }
 
 exports.champ_icon_or_random = (championName) => {
+  championName = championName.replace(" ", "")
   return champ_emojis[championName] !== undefined ? champ_emojis[championName] : random_champ_icon()
 }
