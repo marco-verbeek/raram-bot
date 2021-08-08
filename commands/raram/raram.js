@@ -5,25 +5,58 @@ const { champ_icon_or_random, random_rank_icon } = require('../../utils/champion
 const axios = require('axios')
 const commands = require('../../data/commands.json')
 
+function create_error_embed(title, description){
+  const embed = new MessageEmbed()
+  .setAuthor(title)
+  .setDescription(description)
+  .setColor(0xFF0000)
+
+  return embed;
+}
+
 async function command_analyse_last_game(msg) {
-  // axios request get player last game id
-  // use last game id in command_analyse
-  return command_analyse(msg, '5397055718')
+  const profileReq = await axios.get('http://localhost:3000/accounts/' + msg.author.id)
+  const profile = profileReq.data
+
+  if(profile === undefined || !profile.verified){
+    const embed = create_error_embed(
+      "You do not have a rARAM account, or you haven't verified it yet.",
+      "Use `!raram verify <summonerName>` to verify your account."
+    )
+
+    return msg.embed(embed)
+  }
+
+  const lastMatchReq = await axios.get('http://localhost:3000/accounts/'  + msg.author.id + '/lastgame')
+  const lastMatch = lastMatchReq.data
+
+  if(lastMatch.error !== undefined){
+    const embed = create_error_embed("An error occured during rARAM's fetching of your last played ARAM.", "Error: "+lastMatch.error)
+
+    return msg.embed(embed)
+  }
+
+  return command_analyse(msg, lastMatch.matchId, profile.encryptedAccountId)
 }
 
 /**
- * Displays an analysis of the league game with provided ID.
+ * Displays an analysis of the league game with provided ID. Only displays the team to which summonerId belongs.
  * @param {CommandoMessage} message - The message the command is being run for
  */
-async function command_analyse(msg, gameId) {
+async function command_analyse(msg, gameId, accountId) {
   try {
     const res = await axios.get('http://localhost:3000/analyses/' + gameId)
-
     const players = res["data"]["players"]
+
+    const playerTeamId = players.find((player) => player.accountId === accountId).teamId
+
+    const startIndex = playerTeamId === 100 ? 0 : 5;
+    const endIndex = playerTeamId === 100 ? 5 : 10;
+
     let col1 = "", col2 = "", col3 = ""
 
     // TODO: this needs to be cleaned up and finished.
-    for (var i = 0; i < 5; i++) {
+    for (var i = startIndex; i < endIndex; i++) {
       col1 += champ_icon_or_random(players[i]["champion"]) + " | " +
         players[i]["summonerName"] + "\n";
       col2 += `[${players[i]["kills"]}/${players[i]["deaths"]}/${players[i]["assists"]}](${msg.url} "Damage Done: 12245\nDamage Taken: 32422 \nHealed: 1200")` +
@@ -161,7 +194,7 @@ module.exports = class RaramCommand extends Command {
 
     switch (mainArg) {
       case '':
-        return command_analyse(msg)
+        return command_analyse_last_game(msg)
       case 'analyse':
         return command_analyse(msg, mainSpecific[0])
       case 'profile':
