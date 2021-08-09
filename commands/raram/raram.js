@@ -65,7 +65,7 @@ async function command_analyse(msg, gameId, accountId) {
         (players[i]["lpGain"] >= 0 ? "+" : "") + players[i]["lpGain"] + ")\n";
     }
 
-    const embed = new MessageEmbed().setAuthor("Here are your rARAM stats for your last played ARAM:").
+    const embed = new MessageEmbed().setAuthor("Here are your rARAM stats from your last played ARAM:").
       setColor(0x009FFF).
       addField("Player", col1, true).
       addField("K/D/A", col2, true).
