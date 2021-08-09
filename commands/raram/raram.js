@@ -65,20 +65,15 @@ async function command_analyse(msg, gameId, accountId) {
         (players[i]["lpGain"] >= 0 ? "+" : "") + players[i]["lpGain"] + ")\n";
     }
 
-    const embed = new MessageEmbed().setAuthor(
-      "Here are your rARAM stats for your last played ARAM:",
-      msg.author.displayAvatarURL()).
-      setColor(0x00b3ff).
+    const embed = new MessageEmbed().setAuthor("Here are your rARAM stats for your last played ARAM:").
+      setColor(0x009FFF).
       addField("Player", col1, true).
       addField("K/D/A", col2, true).
       addField("Rank", col3, true)
 
     return msg.embed(embed);
   } catch (e) {
-    const embed = new MessageEmbed()
-      .setAuthor("An error occured. rARAM could not find the game with specified id.\nAre you sure this is an existing ARAM game?")
-      .setColor(0xFF0000)
-
+    const embed = create_error_embed("An error occured: rARAM could not find the game with specified id.", "Are you sure this is an existing ARAM game?")
     return msg.embed(embed);
   }
 }
@@ -100,11 +95,41 @@ function command_profile(msg){
  * @param accountName the player's account/summoner name
  * @param region the player's account region
  */
-function command_verify(msg, accountName, region = 'EUW'){
-  // axios request on endpoint /verify/:discordId
-  // returns an array of icons left to verify. if none, display "verification completed"
+async function command_verify(msg, accountName = "", region = 'EUW'){
+  try {
+    const verifyReq = await axios.get('http://localhost:3000/accounts/verify/' + msg.author.id + "/" + accountName)
+    const account = verifyReq.data
 
-  return msg.say('rARAM profile verification for ' + accountName + " (" + region.toUpperCase() + ")")
+    // No account has been found: please specify a summonerName.
+    if(account.error !== undefined){
+      const embed = new MessageEmbed()
+      .setAuthor("An error occured: " + account.error)
+      .setDescription("Please use `!raram verify <summonerName>` first.")
+      .setColor(0x009FFF)
+
+      return msg.embed(embed)
+    }
+
+    // account exists and is verified. Thank you for using rARAM!
+    if (account.verified) {
+      const embed = new MessageEmbed().setAuthor("Your account " + account.summonerName + " (" + region.toUpperCase() + ") is verified.")
+        .setDescription("Have fun using rARAM!")
+        .setColor(0x00FF00)
+
+      return msg.embed(embed);
+    }
+
+    // account exists but has yet to be verified.
+    const embed = new MessageEmbed()
+      .setAuthor("Attempting to verify account " + account.summonerName + " (" + region.toUpperCase() + ").")
+      .setDescription("Please save `" + account.uuid + "` in the League Client.\nThen, use `!raram verify`.")
+      .setColor(0x009FFF)
+
+    return msg.embed(embed)
+  } catch (e) {
+    const embed = create_error_embed("An error occured: rARAM could not find the Summoner with specified name.", "Please use `!raram verify <summonerName>`.")
+    return msg.embed(embed);
+  }
 }
 
 /**
