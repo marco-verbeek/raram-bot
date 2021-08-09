@@ -69,7 +69,8 @@ async function command_analyse(msg, gameId, accountId) {
       setColor(0x009FFF).
       addField("Player", col1, true).
       addField("K/D/A", col2, true).
-      addField("Rank", col3, true)
+      addField("Rank", col3, true).
+      setFooter("Rank is only displayed for players in a rARAM queue.")
 
     return msg.embed(embed);
   } catch (e) {
