@@ -90,7 +90,7 @@ function command_profile(msg){
 }
 
 /**
- * Verifies the player's League identity, by asking the user to change his icon to a specific (free) one.
+ * Verifies the player's League identity, by asking the user to input a uuid in his official League client.
  * @param {CommandoMessage} message - The message the command is being run for
  * @param accountName the player's account/summoner name
  * @param region the player's account region
