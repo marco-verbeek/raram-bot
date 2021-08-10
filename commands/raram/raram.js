@@ -44,6 +44,13 @@ async function command_analyse_last_game(msg) {
  * @param {CommandoMessage} message - The message the command is being run for
  */
 async function command_analyse(msg, gameId, accountId) {
+  const loadingEmbed = new MessageEmbed()
+  .setAuthor("Here are your rARAM stats from your last played ARAM:")
+  .setDescription("Loading rARAM stats, please wait.")
+  .setColor(0x009FFF)
+
+  const loadingMessage = await msg.embed(loadingEmbed)
+
   try {
     const res = await axios.get('http://localhost:3000/analyses/' + gameId)
     const players = res["data"]["players"]
@@ -55,27 +62,40 @@ async function command_analyse(msg, gameId, accountId) {
 
     let col1 = "", col2 = "", col3 = ""
 
-    // TODO: this needs to be cleaned up and finished.
     for (var i = startIndex; i < endIndex; i++) {
-      col1 += champ_icon_or_random(players[i]["champion"]) + " | " +
-        players[i]["summonerName"] + "\n";
-      col2 += `[${players[i]["kills"]}/${players[i]["deaths"]}/${players[i]["assists"]}](${msg.url} "Damage Done: 12245\nDamage Taken: 32422 \nHealed: 1200")` +
-        "\n";
-      col3 += random_rank_icon() + " (" +
-        (players[i]["lpGain"] >= 0 ? "+" : "") + players[i]["lpGain"] + ")\n";
+      let isRequester = players[i]['accountId'] === accountId
+
+      const championIcon = champ_icon_or_random(players[i]["champion"])
+      const summonerName = players[i]["summonerName"]
+
+      const kills = players[i]["kills"]
+      const deaths = players[i]["deaths"]
+      const assists = players[i]["assists"]
+
+      const damageDone = players[i]["damageDone"]
+      const damageTaken = players[i]["damageTaken"]
+      const totalHealed = players[i]["healed"]
+
+      const lpGain = players[i]["lpGain"]
+      //if (lpGain >= 0) lpGain = "+" + lpGain
+
+      col1 += championIcon + " | " + (isRequester ? "**" : "") + summonerName + (isRequester ? "**" : "") + "\n";
+      col2 += (isRequester ? "**" : "") + `[${kills}/${deaths}/${assists}](${msg.url} "Damage Done: ${damageDone}\nDamage Taken: ${damageTaken}\nTotal Healed: ${totalHealed}")` + (isRequester ? "**" : "") + "\n";
+      col3 += (isRequester ? "**" : "") + random_rank_icon() + " (" + lpGain + ")" + (isRequester ? "**" : "") + "\n";
     }
 
-    const embed = new MessageEmbed().setAuthor("Here are your rARAM stats from your last played ARAM:").
+    const embed = new MessageEmbed()
+      .setAuthor("Here are your rARAM stats from your last played ARAM:").
       setColor(0x009FFF).
       addField("Player", col1, true).
       addField("K/D/A", col2, true).
       addField("Rank", col3, true).
       setFooter("Rank is only displayed for players in a rARAM queue.")
 
-    return msg.embed(embed);
+    return loadingMessage.edit(embed)
   } catch (e) {
     const embed = create_error_embed("An error occured: rARAM could not find the game with specified id.", "Are you sure this is an existing ARAM game?")
-    return msg.embed(embed);
+    return loadingMessage.edit(embed);
   }
 }
 
@@ -128,6 +148,7 @@ async function command_verify(msg, accountName = "", region = 'EUW'){
 
     return msg.embed(embed)
   } catch (e) {
+    console.log(e)
     const embed = create_error_embed("An error occured: rARAM could not find the Summoner with specified name.", "Please use `!raram verify <summonerName>`.")
     return msg.embed(embed);
   }
