@@ -39,6 +39,10 @@ async function command_analyse_last_game(msg) {
   return command_analyse(msg, lastMatch.matchId, profile.encryptedAccountId)
 }
 
+function formatLpGain(lpGain) {
+  return (lpGain >= 0 ? "+" : "") + lpGain
+}
+
 /**
  * Displays an analysis of the league game with provided ID. Only displays the team to which summonerId belongs.
  * @param {CommandoMessage} message - The message the command is being run for
@@ -56,6 +60,7 @@ async function command_analyse(msg, gameId, accountId) {
     const players = res["data"]["players"]
 
     const playerTeamId = players.find((player) => player.accountId === accountId).teamId
+    const winningTeamId = res["data"]["teams"].find((team => team.win)).teamId
 
     const startIndex = playerTeamId === 100 ? 0 : 5;
     const endIndex = playerTeamId === 100 ? 5 : 10;
@@ -64,24 +69,37 @@ async function command_analyse(msg, gameId, accountId) {
 
     for (var i = startIndex; i < endIndex; i++) {
       let isRequester = players[i]['accountId'] === accountId
+      const player = players[i]
 
       const championIcon = champ_icon_or_random(players[i]["champion"])
-      const summonerName = players[i]["summonerName"]
+      const summonerName = player["summonerName"]
 
-      const kills = players[i]["kills"]
-      const deaths = players[i]["deaths"]
-      const assists = players[i]["assists"]
+      const kills = player["kills"]
+      const deaths = player["deaths"]
+      const assists = player["assists"]
 
-      const damageDone = players[i]["damageDone"]
-      const damageTaken = players[i]["damageTaken"]
-      const totalHealed = players[i]["healed"]
+      const damageDone = player["damageDone"]
+      const damageTaken = player["damageTaken"]
+      const totalHealed = player["healed"]
 
-      const lpGain = players[i]["lpGain"]
-      //if (lpGain >= 0) lpGain = "+" + lpGain
+      const lpGain = player["lpGain"]
+      const kdaWithHover = `[${kills}/${deaths}/${assists}](${msg.url} "Damage Done: ${damageDone}\nDamage Taken: ${damageTaken}\nTotal Healed: ${totalHealed}")`
 
+      const winLoseExplained = (player['teamId'] === winningTeamId) ? "Win: +10 LP" : "Lose: -10LP"
+      const kpExplained = "KP: " + (player['teamComparedKP'] * 100).toFixed(0) + "% (" + formatLpGain(player['KPGain']) + ")"
+      const deathsExplained = "Deaths: " + (player['teamComparedDeaths'] * 100).toFixed(0) + "% (" + formatLpGain(player['deathsGain']) + ")"
+      const dmgDoneExplained = "Damage Dealt: " + (player['teamComparedDamageDone'] * 100).toFixed(0) + "% (" + formatLpGain(player['damageDoneGain']) + ")"
+      const dmgTakenExplained = "Damage Taken: " + (player['teamComparedDamageTaken'] * 100).toFixed(0) + "% (" + formatLpGain(player['damageTakenGain']) + ")"
+      const healExplained = "Total Healed: " + (player['teamComparedHealed'] * 100).toFixed(0) + "% (" + formatLpGain(player['healedGain']) + ")"
+
+      const gainExplanation = winLoseExplained + "\n" + kpExplained + "\n" + deathsExplained + "\n\n" + dmgDoneExplained + "\n" + dmgTakenExplained + "\n" + healExplained
+
+      const rankWithLpGain = random_rank_icon() + " (" + formatLpGain(lpGain) + ")"
+      const rankWithLpGainWithHover = `[${rankWithLpGain}](${msg.url} "${gainExplanation}")`
+      
       col1 += championIcon + " | " + (isRequester ? "**" : "") + summonerName + (isRequester ? "**" : "") + "\n";
-      col2 += (isRequester ? "**" : "") + `[${kills}/${deaths}/${assists}](${msg.url} "Damage Done: ${damageDone}\nDamage Taken: ${damageTaken}\nTotal Healed: ${totalHealed}")` + (isRequester ? "**" : "") + "\n";
-      col3 += (isRequester ? "**" : "") + random_rank_icon() + " (" + lpGain + ")" + (isRequester ? "**" : "") + "\n";
+      col2 += (isRequester ? "**" : "") + kdaWithHover + (isRequester ? "**" : "") + "\n";
+      col3 += (isRequester ? "**" : "") + rankWithLpGainWithHover + (isRequester ? "**" : "") + "\n";
     }
 
     const embed = new MessageEmbed()
