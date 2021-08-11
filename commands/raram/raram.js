@@ -1,6 +1,6 @@
 const { Command } = require('discord.js-commando');
 const { MessageEmbed } = require('discord.js');
-const { champ_icon_or_random, random_rank_icon } = require('../../utils/champion_icons')
+const { champ_icon, random_rank_icon } = require('../../utils/champion_icons')
 
 const axios = require('axios')
 const commands = require('../../data/commands.json')
@@ -71,7 +71,7 @@ async function command_analyse(msg, gameId, accountId) {
       let isRequester = players[i]['accountId'] === accountId
       const player = players[i]
 
-      const championIcon = champ_icon_or_random(players[i]["champion"])
+      const championIcon = champ_icon(players[i]["champion"])
       const summonerName = player["summonerName"]
 
       const kills = player["kills"]
