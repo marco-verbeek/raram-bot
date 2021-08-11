@@ -108,10 +108,6 @@ async function command_analyse(msg, gameId, accountId) {
       col3 += (isRequester ? "**" : "") + (isRequester ? rankWithLpGainWithHover : rankWithLpGain) + (isRequester ? "**" : "") + "\n";
     }
 
-    console.log(col1.length)
-    console.log(col2.length)
-    console.log(col3.length)
-
     const embed = new MessageEmbed()
       .setAuthor("Here are your rARAM stats from your last played ARAM:").
       setColor(0x009FFF).
