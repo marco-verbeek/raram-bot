@@ -16,3 +16,7 @@ exports.champ_icon = (championName) => {
   championName = championName.replace(" ", "")
   return champ_emojis[championName] !== undefined ? champ_emojis[championName] : champ_emojis["Unknown"]
 }
+
+exports.loading_icon = () => {
+  return champ_emojis["HappyCat"]
+}

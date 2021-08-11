@@ -1,6 +1,6 @@
 const { Command } = require('discord.js-commando');
 const { MessageEmbed } = require('discord.js');
-const { champ_icon, random_rank_icon } = require('../../utils/champion_icons')
+const { champ_icon, random_rank_icon, loading_icon } = require('../../utils/champion_icons')
 
 const axios = require('axios')
 const commands = require('../../data/commands.json')
@@ -50,7 +50,7 @@ function formatLpGain(lpGain) {
 async function command_analyse(msg, gameId, accountId) {
   const loadingEmbed = new MessageEmbed()
   .setAuthor("Here are your rARAM stats from your last played ARAM:")
-  .setDescription("Loading rARAM stats, please wait.")
+  .setDescription(loading_icon() + " Loading rARAM stats, please wait.")
   .setColor(0x009FFF)
 
   const loadingMessage = await msg.embed(loadingEmbed)
