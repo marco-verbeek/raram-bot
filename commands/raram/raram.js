@@ -83,24 +83,34 @@ async function command_analyse(msg, gameId, accountId) {
       const totalHealed = player["healed"]
 
       const lpGain = player["lpGain"]
-      const kdaWithHover = `[${kills}/${deaths}/${assists}](${msg.url} "Damage Done: ${damageDone}\nDamage Taken: ${damageTaken}\nTotal Healed: ${totalHealed}")`
+      const kda = `${kills}/${deaths}/${assists}`
+      const kdaWithHover = `[${kills}/${deaths}/${assists}](${msg.url} "Damage Done: ${damageDone}\nDamage Taken: ${damageTaken}\nHealed: ${totalHealed}")`
 
       const winLoseExplained = (player['teamId'] === winningTeamId) ? "Win: +10 LP" : "Lose: -10LP"
       const kpExplained = "KP: " + (player['teamComparedKP'] * 100).toFixed(0) + "% (" + formatLpGain(player['KPGain']) + ")"
       const deathsExplained = "Deaths: " + (player['teamComparedDeaths'] * 100).toFixed(0) + "% (" + formatLpGain(player['deathsGain']) + ")"
+
+      const DTHexplained = "+ highest of these values:"
       const dmgDoneExplained = "Damage Dealt: " + (player['teamComparedDamageDone'] * 100).toFixed(0) + "% (" + formatLpGain(player['damageDoneGain']) + ")"
       const dmgTakenExplained = "Damage Taken: " + (player['teamComparedDamageTaken'] * 100).toFixed(0) + "% (" + formatLpGain(player['damageTakenGain']) + ")"
       const healExplained = "Total Healed: " + (player['teamComparedHealed'] * 100).toFixed(0) + "% (" + formatLpGain(player['healedGain']) + ")"
 
-      const gainExplanation = winLoseExplained + "\n" + kpExplained + "\n" + deathsExplained + "\n\n" + dmgDoneExplained + "\n" + dmgTakenExplained + "\n" + healExplained
+      const maxDTH = formatLpGain(Math.max(player['damageDoneGain'], player['damageTakenGain'], player['healedGain']))
+      const totalLpExplained = (player['teamId'] === winningTeamId ? "+10" : "-10") + formatLpGain(player['KPGain']) + formatLpGain(player['deathsGain']) + maxDTH + " = " + player['lpGain']
+
+      const gainExplanation = winLoseExplained + "\n" + kpExplained + "\n" + deathsExplained + "\n\n" + DTHexplained + "\n" + dmgDoneExplained + "\n" + dmgTakenExplained + "\n" + healExplained + "\n\n" + totalLpExplained
 
       const rankWithLpGain = random_rank_icon() + " (" + formatLpGain(lpGain) + ")"
       const rankWithLpGainWithHover = `[${rankWithLpGain}](${msg.url} "${gainExplanation}")`
       
       col1 += championIcon + " | " + (isRequester ? "**" : "") + summonerName + (isRequester ? "**" : "") + "\n";
-      col2 += (isRequester ? "**" : "") + kdaWithHover + (isRequester ? "**" : "") + "\n";
-      col3 += (isRequester ? "**" : "") + rankWithLpGainWithHover + (isRequester ? "**" : "") + "\n";
+      col2 += (isRequester ? "**" : "") + (isRequester ? kdaWithHover : kda) + (isRequester ? "**" : "") + "\n";
+      col3 += (isRequester ? "**" : "") + (isRequester ? rankWithLpGainWithHover : rankWithLpGain) + (isRequester ? "**" : "") + "\n";
     }
+
+    console.log(col1.length)
+    console.log(col2.length)
+    console.log(col3.length)
 
     const embed = new MessageEmbed()
       .setAuthor("Here are your rARAM stats from your last played ARAM:").
